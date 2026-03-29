@@ -241,7 +241,7 @@ export default function RegistrationPage() {
     const hora = now.toLocaleTimeString('es-CL', { timeStyle: 'medium' })
 
     let content = `Se ha inscrito una nueva lista\n\n`
-    content += `═══════════════════════════════════��═══\n\n`
+    content += `═══════════════════════════════════���═══\n\n`
     
     content += `PRESIDENTE/A:\n`
     content += `- Nombre: ${formData.presidente.nombre}\n`
@@ -396,6 +396,18 @@ Hora: ${hora}
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] relative overflow-x-hidden">
+      {/* Matrix GIF Background - Full Page */}
+      <div 
+        className="fixed inset-0 opacity-20 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/McQI-QpEePgMzwkv9IFpmg8wS4hE2AwyRUW.gif)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-[#0a0a0a]/80 via-[#0a0a0a]/60 to-[#0a0a0a]/80 pointer-events-none z-0" />
+      
       <HudOverlay />
       
       {/* Notification */}
@@ -424,16 +436,6 @@ Hora: ${hora}
         {/* Header Section */}
         <header className="mb-8">
           <div className="border border-[#00ff4133] bg-[#0d1117] p-6 relative overflow-hidden">
-            {/* Matrix GIF Background */}
-            <div 
-              className="absolute inset-0 opacity-30 pointer-events-none"
-              style={{
-                backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/McQI-QpEePgMzwkv9IFpmg8wS4hE2AwyRUW.gif)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0d1117]/70 via-[#0d1117]/50 to-[#0d1117]/70 pointer-events-none" />
             
             <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff41] z-10" />
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff41] z-10" />
