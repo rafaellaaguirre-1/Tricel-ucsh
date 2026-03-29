@@ -241,7 +241,7 @@ export default function RegistrationPage() {
     const hora = now.toLocaleTimeString('es-CL', { timeStyle: 'medium' })
 
     let content = `Se ha inscrito una nueva lista\n\n`
-    content += `═══════════════════════════════════════\n\n`
+    content += `═══════════════════════════════════��═══\n\n`
     
     content += `PRESIDENTE/A:\n`
     content += `- Nombre: ${formData.presidente.nombre}\n`
@@ -490,10 +490,10 @@ Hora: ${hora}
             
             <div className="text-center mt-4 text-xs text-[#4a9f5a]">
               <span className="text-[#00ff4150]">{'<time>'}</span>
-              {currentTime.toLocaleString("es-CL", {
+              {currentTime ? currentTime.toLocaleString("es-CL", {
                 dateStyle: "full",
                 timeStyle: "medium"
-              })}
+              }) : "--"}
               <span className="text-[#00ff4150]">{'</time>'}</span>
             </div>
             
