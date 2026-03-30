@@ -1,7 +1,5 @@
 "use client"
 
-// EmailJS is loaded dynamically to avoid SSR issues
-// Registration system for UCSH ICCI
 import { useState, useEffect, useCallback, useRef } from "react"
 import { HudOverlay } from "@/components/hud-overlay"
 import { CyberInput } from "@/components/cyber-input"
@@ -12,12 +10,6 @@ interface AdditionalMember {
   id: string
   nombre: string
   position: string
-  rut: string
-  email: string
-}
-
-interface MemberData {
-  nombre: string
   rut: string
   email: string
 }
@@ -76,7 +68,6 @@ export default function RegistrationPage() {
 
   const timeRemaining = getTimeRemaining()
 
-  // Set mounted state and initialize time only on client
   useEffect(() => {
     setMounted(true)
     setCurrentTime(new Date())
@@ -86,7 +77,6 @@ export default function RegistrationPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Auto-hide notification after 5 seconds
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 5000)
@@ -94,10 +84,8 @@ export default function RegistrationPage() {
     }
   }, [notification])
 
-  // EmailJS ref for dynamic import
   const emailjsRef = useRef<typeof import('@emailjs/browser') | null>(null)
 
-  // Initialize EmailJS dynamically
   useEffect(() => {
     import('@emailjs/browser').then((module) => {
       emailjsRef.current = module
@@ -125,11 +113,9 @@ export default function RegistrationPage() {
 
   const updateMember = (id: string, field: keyof AdditionalMember, value: string) => {
     let processedValue = value
-    
     if (field === 'rut') {
       processedValue = formatRut(value)
     }
-    
     setAdditionalMembers(
       additionalMembers.map(m => m.id === id ? { ...m, [field]: processedValue } : m)
     )
@@ -139,7 +125,7 @@ export default function RegistrationPage() {
     const formattedRut = formatRut(value)
     setFormData({
       ...formData,
-      [section]: { ...formData[section], rut: formattedRut }
+      [section]: { ...(formData[section] as { nombre: string; rut: string; email: string }), rut: formattedRut }
     })
   }
 
@@ -156,7 +142,7 @@ export default function RegistrationPage() {
       return result.error
     }
     if (field === 'position' && !value.trim()) {
-      return 'Posición es requerida'
+      return 'Posicion es requerida'
     }
     return undefined
   }, [])
@@ -169,15 +155,13 @@ export default function RegistrationPage() {
       additionalMembers: {}
     }
 
-  let isValid = true
+    let isValid = true
 
-  // Validate list name
-  if (!formData.listaNombre.trim()) {
-    isValid = false
-  }
-  
-  // Validate required members
-  const sections: (keyof typeof formData)[] = ['presidente', 'vicepresidente', 'secretario']
+    if (!formData.listaNombre.trim()) {
+      isValid = false
+    }
+    
+    const sections: ('presidente' | 'vicepresidente' | 'secretario')[] = ['presidente', 'vicepresidente', 'secretario']
     
     for (const section of sections) {
       const data = formData[section]
@@ -201,7 +185,6 @@ export default function RegistrationPage() {
       }
     }
 
-    // Validate additional members
     for (const member of additionalMembers) {
       newErrors.additionalMembers[member.id] = {}
       
@@ -236,50 +219,6 @@ export default function RegistrationPage() {
     return isValid
   }
 
-  const formatEmailContent = (): string => {
-    const now = new Date()
-    const fecha = now.toLocaleDateString('es-CL', { dateStyle: 'full' })
-    const hora = now.toLocaleTimeString('es-CL', { timeStyle: 'medium' })
-
-    let content = `Se ha inscrito una nueva lista\n\n`
-    content += `═══════════════════════════════════���═══\n\n`
-    
-    content += `PRESIDENTE/A:\n`
-    content += `- Nombre: ${formData.presidente.nombre}\n`
-    content += `- RUT: ${formData.presidente.rut}\n`
-    content += `- Correo: ${formData.presidente.email}\n\n`
-    
-    content += `VICEPRESIDENTE/A:\n`
-    content += `- Nombre: ${formData.vicepresidente.nombre}\n`
-    content += `- RUT: ${formData.vicepresidente.rut}\n`
-    content += `- Correo: ${formData.vicepresidente.email}\n\n`
-    
-    content += `SECRETARIO/A:\n`
-    content += `- Nombre: ${formData.secretario.nombre}\n`
-    content += `- RUT: ${formData.secretario.rut}\n`
-    content += `- Correo: ${formData.secretario.email}\n\n`
-    
-    if (additionalMembers.length > 0) {
-      content += `INTEGRANTES ADICIONALES:\n`
-      additionalMembers.forEach((member, index) => {
-        if (member.nombre || member.position || member.rut || member.email) {
-          content += `\nIntegrante ${index + 1}:\n`
-          content += `- Rol: ${member.position}\n`
-          content += `- Nombre: ${member.nombre}\n`
-          content += `- RUT: ${member.rut}\n`
-          content += `- Correo: ${member.email}\n`
-        }
-      })
-      content += `\n`
-    }
-    
-    content += `═══════════════════════════════════════\n\n`
-    content += `Fecha de inscripción: ${fecha}\n`
-    content += `Hora: ${hora}\n`
-
-    return content
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -295,7 +234,6 @@ export default function RegistrationPage() {
       const fecha = now.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
       const hora = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
       
-      // Format additional members
       let integrantes_adicionales = ''
       if (additionalMembers.length > 0) {
         additionalMembers.forEach((member, index) => {
@@ -311,11 +249,8 @@ export default function RegistrationPage() {
         integrantes_adicionales = 'Sin integrantes adicionales'
       }
 
-      // Create info_completa formatted string
       const info_completa = `
-═══════════════════════════════════════
-   INSCRIPCIÓN DE CANDIDATURA TRICEL ICCI 2026
-═══════════════════════════════════════
+INSCRIPCION DE CANDIDATURA TRICEL ICCI 2026
 
 NOMBRE DE LISTA: ${formData.listaNombre || 'No especificado'}
 
@@ -337,10 +272,8 @@ SECRETARIO/A:
 INTEGRANTES ADICIONALES:
 ${integrantes_adicionales}
 
-═══════════════════════════════════════
-Fecha de inscripción: ${fecha}
+Fecha de inscripcion: ${fecha}
 Hora: ${hora}
-═══════════════════════════════════════
 `
 
       const templateParams = {
@@ -373,7 +306,6 @@ Hora: ${hora}
 
       setNotification({ type: 'success', message: 'Candidatura enviada correctamente' })
       
-      // Reset form completely - no data reuse between submissions
       setFormData({
         listaNombre: "",
         presidente: { nombre: "", rut: "", email: "" },
@@ -394,6 +326,10 @@ Hora: ${hora}
       setIsSubmitting(false)
     }
   }
+
+  const formattedTime = currentTime 
+    ? currentTime.toLocaleString("es-CL", { dateStyle: "full", timeStyle: "medium" }) 
+    : "--"
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] relative overflow-x-hidden">
@@ -437,19 +373,18 @@ Hora: ${hora}
         {/* Header Section */}
         <header className="mb-8">
           <div className="border border-[#00ff4133] bg-[#0d1117] p-6 relative overflow-hidden">
-            
             <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff41] z-10" />
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff41] z-10" />
             <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff41] z-10" />
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff41] z-10" />
             
             <div className="text-center space-y-2 relative z-10">
-              <div className="text-[10px] text-[#4a9f5a] tracking-[0.3em]">{'// SISTEMA DE REGISTRO //'}</div>
+              <div className="text-[10px] text-[#4a9f5a] tracking-[0.3em]">{"// SISTEMA DE REGISTRO //"}</div>
               <h1 className="text-xl md:text-2xl font-bold text-[#00ff41] neon-text tracking-wide">
-                Universidad Católica Silva Henríquez
+                Universidad Catolica Silva Henriquez
               </h1>
               <h2 className="text-sm md:text-base text-[#00d4aa]">
-                Ingeniería Civil en Computación e Informática
+                Ingenieria Civil en Computacion e Informatica
               </h2>
               <a 
                 href="https://instagram.com/tricel.icci.2026" 
@@ -459,7 +394,7 @@ Hora: ${hora}
               >
                 <Instagram size={14} />
                 <span>@tricel.icci.2026</span>
-                <span className="text-[#00ff4150]">{'// más detalles'}</span>
+                <span className="text-[#00ff4150]">{"// mas detalles"}</span>
               </a>
             </div>
           </div>
@@ -475,33 +410,30 @@ Hora: ${hora}
             
             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
               {[
-                { label: "DÍAS", value: timeRemaining.days },
+                { label: "DIAS", value: timeRemaining.days },
                 { label: "HORAS", value: timeRemaining.hours },
                 { label: "MIN", value: timeRemaining.minutes },
-{ label: "SEG", value: timeRemaining.seconds },
-  ].map((item) => (
-  <div key={item.label} className="text-center">
-  <div className="border border-[#00ff4150] bg-[#0a0a0a] px-4 py-2 min-w-[70px]">
-  <div className="text-2xl md:text-3xl font-bold text-[#00ff41] neon-text font-mono">
-  {mounted ? String(item.value).padStart(2, "0") : "--"}
-  </div>
-  </div>
-  <div className="text-[8px] text-[#4a9f5a] mt-1 tracking-widest">{item.label}</div>
-  </div>
-  ))}
+                { label: "SEG", value: timeRemaining.seconds },
+              ].map((item) => (
+                <div key={item.label} className="text-center">
+                  <div className="border border-[#00ff4150] bg-[#0a0a0a] px-4 py-2 min-w-[70px]">
+                    <div className="text-2xl md:text-3xl font-bold text-[#00ff41] neon-text font-mono">
+                      {mounted ? String(item.value).padStart(2, "0") : "--"}
+                    </div>
+                  </div>
+                  <div className="text-[8px] text-[#4a9f5a] mt-1 tracking-widest">{item.label}</div>
+                </div>
+              ))}
             </div>
             
             <div className="text-center mt-4 text-xs text-[#4a9f5a]">
-              <span className="text-[#00ff4150]">{'<time>'}</span>
-              {currentTime ? currentTime.toLocaleString("es-CL", {
-                dateStyle: "full",
-                timeStyle: "medium"
-              }) : "--"}
-              <span className="text-[#00ff4150]">{'</time>'}</span>
+              <span className="text-[#00ff4150]">{"<time>"}</span>
+              {formattedTime}
+              <span className="text-[#00ff4150]">{"</time>"}</span>
             </div>
             
             <div className="text-center mt-2 text-[10px] text-[#4a9f5a]">
-              Período de inscripción: 01 Abril - 17 Abril, 2026
+              Periodo de inscripcion: 01 Abril - 17 Abril, 2026
             </div>
           </div>
         </section>
@@ -512,7 +444,7 @@ Hora: ${hora}
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#00ff4150] to-transparent" />
             <h2 className="text-lg text-[#00ff41] tracking-wider">
-              {'<'} INSCRIPCIÓN DE CANDIDATURAS {'/>'} 
+              {"<"} INSCRIPCION DE CANDIDATURAS {"/>"} 
             </h2>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#00ff4150] to-transparent" />
           </div>
@@ -526,7 +458,7 @@ Hora: ${hora}
                   <span className="text-sm text-[#00ff41] tracking-wider">NOMBRE DE LISTA</span>
                   <span className="text-[8px] text-[#ff0040] border border-[#ff004050] px-1">REQUERIDO</span>
                 </div>
-                <div className="text-[10px] text-[#4a9f5a]">{'// módulo_lista'}</div>
+                <div className="text-[10px] text-[#4a9f5a]">{"// modulo_lista"}</div>
               </div>
               <div className="p-4">
                 <CyberInput
@@ -556,40 +488,40 @@ Hora: ${hora}
                       <span className="text-[8px] text-[#ff0040] border border-[#ff004050] px-1">REQUERIDO</span>
                     )}
                   </div>
-                  <div className="text-[10px] text-[#4a9f5a]">{'// módulo_' + section.key}</div>
+                  <div className="text-[10px] text-[#4a9f5a]">{"// modulo_" + section.key}</div>
                 </div>
                 
                 <div className="p-4 grid gap-4">
                   <CyberInput
                     label="Nombre y Apellido"
                     placeholder="Ingrese nombre completo"
-                    value={formData[section.key as keyof typeof formData].nombre}
+                    value={(formData[section.key as keyof typeof formData] as { nombre: string; rut: string; email: string }).nombre}
                     onChange={(e) => setFormData({
                       ...formData,
-                      [section.key]: { ...formData[section.key as keyof typeof formData], nombre: e.target.value }
+                      [section.key]: { ...(formData[section.key as keyof typeof formData] as { nombre: string; rut: string; email: string }), nombre: e.target.value }
                     })}
-                    error={errors[section.key as keyof typeof formData].nombre}
+                    error={errors[section.key as 'presidente' | 'vicepresidente' | 'secretario'].nombre}
                     required
                   />
                   <div className="grid md:grid-cols-2 gap-4">
                     <CyberInput
                       label="RUT"
                       placeholder="12.345.678-9"
-                      value={formData[section.key as keyof typeof formData].rut}
+                      value={(formData[section.key as keyof typeof formData] as { nombre: string; rut: string; email: string }).rut}
                       onChange={(e) => handleRutChange(section.key as keyof typeof formData, e.target.value)}
-                      error={errors[section.key as keyof typeof formData].rut}
+                      error={errors[section.key as 'presidente' | 'vicepresidente' | 'secretario'].rut}
                       required
                     />
                     <CyberInput
                       label="Correo Institucional"
                       type="email"
                       placeholder="usuario@miucsh.cl"
-                      value={formData[section.key as keyof typeof formData].email}
+                      value={(formData[section.key as keyof typeof formData] as { nombre: string; rut: string; email: string }).email}
                       onChange={(e) => setFormData({
                         ...formData,
-                        [section.key]: { ...formData[section.key as keyof typeof formData], email: e.target.value }
+                        [section.key]: { ...(formData[section.key as keyof typeof formData] as { nombre: string; rut: string; email: string }), email: e.target.value }
                       })}
-                      error={errors[section.key as keyof typeof formData].email}
+                      error={errors[section.key as 'presidente' | 'vicepresidente' | 'secretario'].email}
                       required
                     />
                   </div>
@@ -626,12 +558,12 @@ Hora: ${hora}
                     </div>
                     
                     <div className="text-[10px] text-[#4a9f5a] mb-3">
-                      {'// integrante_adicional_' + (index + 1)}
+                      {"// integrante_adicional_" + (index + 1)}
                     </div>
                     
                     <div className="grid gap-4">
                       <CyberInput
-                        label="Posición / Rol"
+                        label="Posicion / Rol"
                         placeholder="Ej: Tesorero, Vocal, etc."
                         value={member.position}
                         onChange={(e) => updateMember(member.id, "position", e.target.value)}
@@ -682,10 +614,8 @@ Hora: ${hora}
           {/* Rules Panel - RED DANGER STYLE */}
           <section className="mb-8">
             <div className="border border-[#ff0040] bg-[#0d1117] relative overflow-hidden shadow-[0_0_20px_#ff004030,inset_0_0_30px_#ff004010]">
-              {/* Animated top border */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff0040] to-transparent animate-pulse" />
               
-              {/* Corner glow effects */}
               <div className="absolute top-0 left-0 w-8 h-8 bg-[#ff0040] opacity-20 blur-xl" />
               <div className="absolute top-0 right-0 w-8 h-8 bg-[#ff0040] opacity-20 blur-xl" />
               <div className="absolute bottom-0 left-0 w-8 h-8 bg-[#ff0040] opacity-20 blur-xl" />
@@ -694,33 +624,33 @@ Hora: ${hora}
               <div className="border-b border-[#ff004050] px-4 py-3 flex items-center gap-2 bg-[#ff004010]">
                 <AlertTriangle size={16} className="text-[#ff0040] animate-pulse" />
                 <span className="text-sm text-[#ff0040] tracking-wider font-bold">REGLAS Y REQUISITOS</span>
-                <span className="text-[10px] text-[#ff004080] ml-auto">{'// sys_warning'}</span>
+                <span className="text-[10px] text-[#ff004080] ml-auto">{"// sys_warning"}</span>
               </div>
               
               <div className="p-4 text-xs space-y-3 font-mono relative">
                 <div className="flex items-start gap-2">
-                  <span className="text-[#ff0040]">{'[!]'}</span>
-                  <span className="text-[#ff6b6b]">Mínimo 3 integrantes requeridos (Presidente, Vicepresidente, Secretario)</span>
+                  <span className="text-[#ff0040]">{"[!]"}</span>
+                  <span className="text-[#ff6b6b]">Minimo 3 integrantes requeridos (Presidente, Vicepresidente, Secretario)</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[#ff0040]">{'[!]'}</span>
-                  <span className="text-[#ff6b6b]">Máximo 7 integrantes en total</span>
+                  <span className="text-[#ff0040]">{"[!]"}</span>
+                  <span className="text-[#ff6b6b]">Maximo 7 integrantes en total</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[#ff0040]">{'[!]'}</span>
-                  <span className="text-[#ff6b6b]">Los roles adicionales deben especificar su función</span>
+                  <span className="text-[#ff0040]">{"[!]"}</span>
+                  <span className="text-[#ff6b6b]">Los roles adicionales deben especificar su funcion</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[#ff0040]">{'[!]'}</span>
-                  <span className="text-[#ff6b6b]">Deben ser estudiantes regulares sin restricciones académicas</span>
+                  <span className="text-[#ff0040]">{"[!]"}</span>
+                  <span className="text-[#ff6b6b]">Deben ser estudiantes regulares sin restricciones academicas</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[#ff0040]">{'[!]'}</span>
+                  <span className="text-[#ff0040]">{"[!]"}</span>
                   <span className="text-[#ff6b6b]">Solo se aceptan correos institucionales @miucsh.cl</span>
                 </div>
                 <div className="flex items-start gap-2 pt-3 mt-3 border-t border-[#ff004030]">
-                  <span className="text-[#ff0040] text-lg">{'⚠'}</span>
-                  <span className="text-[#ff0040] font-bold">Las listas oficiales serán publicadas después del 21 de Abril, 2026</span>
+                  <span className="text-[#ff0040] text-lg">{"!"}</span>
+                  <span className="text-[#ff0040] font-bold">Las listas oficiales seran publicadas despues del 21 de Abril, 2026</span>
                 </div>
               </div>
             </div>
@@ -750,8 +680,8 @@ Hora: ${hora}
         <footer className="mt-12 text-center">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-[#00ff4130] to-transparent mb-4" />
           <div className="text-[10px] text-[#4a9f5a] space-y-1">
-            <div>{'// TRICEL ICCI 2026 //'}</div>
-            <div className="text-[#00ff4150]">Sistema de Inscripción v1.0.0</div>
+            <div>{"// TRICEL ICCI 2026 //"}</div>
+            <div className="text-[#00ff4150]">Sistema de Inscripcion v1.0.0</div>
           </div>
         </footer>
       </div>
