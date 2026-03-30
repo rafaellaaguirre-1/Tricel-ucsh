@@ -1,6 +1,7 @@
 "use client"
 
 // EmailJS is loaded dynamically to avoid SSR issues
+// Registration system for UCSH ICCI
 import { useState, useEffect, useCallback, useRef } from "react"
 import { HudOverlay } from "@/components/hud-overlay"
 import { CyberInput } from "@/components/cyber-input"
